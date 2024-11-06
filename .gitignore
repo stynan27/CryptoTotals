@@ -1,5 +1,6 @@
 # Financial data
 *.xlsx
+*.csv
 secrets.json
 
 # Byte-compiled / optimized / DLL files
