@@ -112,6 +112,19 @@ def retrieve_gemini_stake_details(token=''):
     ]
     return filter_data_by_selected_columns(gem_stake_data, selected_columns)
     
+def retrieve_coinbase_transaction_details(token=''):
+    cb_transaction_data = retrieve_transactions_from_file(
+        token=token, \
+        token_column_name='Asset', \
+        filename='coinbase_transactions.csv' \
+    )
+    selected_columns = [
+        'Timestamp', 'Asset', 'Quantity Transacted', \
+        'Price at Transaction','Subtotal','Total (inclusive of fees and/or spread)',\
+        'Fees and/or Spread'
+    ]
+    return filter_data_by_selected_columns(cb_transaction_data, selected_columns)
+
 
 def retrieve_transactions_from_file(token='', token_column_name='', filename='', addit_filters={}) -> pd:
     # Load the CSV file 
@@ -204,22 +217,8 @@ if __name__ == '__main__':
     # gem_eth_stake_data = retrieve_gemini_stake_details(token='ETH')
     # aggregate_stake_details(transaction_data=gem_eth_stake_data, token='ETH')
 
-    # cb_btc_data = retrieve_transactions_from_file(
-    #     token='BTC', \
-    #     token_column_name='Asset', \
-    #     filename='coinbase_transactions.csv' \
-    # )
-    #cb_eth_data = retrieve_transactions_from_file(
-        # token='ETH', \ 
-        # token_column_name='Asset', \
-        # filename='coinbase_transactions.csv' \
-    # )
-    # selected_columns = ['Timestamp', 'Asset', 'Quantity Transacted', \
-    # 'Price at Transaction','Subtotal','Total (inclusive of fees and/or spread)',\
-    # 'Fees and/or Spread']
-    
-    
+    # Retrieve Coinbase Transaction History
+    #cb_btc_data = retrieve_coinbase_transaction_details('BTC')
     #aggregate_transaction_details(btc_data)
     
-    #print(gem_btc_stake_data)
     print()
