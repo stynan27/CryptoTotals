@@ -6,7 +6,10 @@ pd.options.display.float_format = '{:.8f}'.format
     
 pd.set_option('display.max_rows', 1000)
 
-TOKENS_TO_AGGREGATE=['BTC', 'ETH']
+TOKENS_TO_AGGREGATE=[
+    'BTC',
+    'ETH'
+]
 
 def convert_ts_to_dt(records):
     for idx, record in enumerate(records):
@@ -76,6 +79,12 @@ def filter_data_by_selected_columns(transaction_data: pd, selected_columns: list
     return transaction_data[selected_columns]
 
 def format_gem_transaction_details(transaction_data: pd, token = '') -> pd:
+    # To be used later
+    transaction_data['First Date'] =\
+        transaction_data['Date']
+    transaction_data['Latest Date'] =\
+        transaction_data['Date']
+        
     transaction_data['USD Amount USD'] = \
         transaction_data['USD Amount USD'].str.slice(1, -1)
     transaction_data['USD Amount USD'] = \
@@ -92,6 +101,12 @@ def format_gem_transaction_details(transaction_data: pd, token = '') -> pd:
     return transaction_data
 
 def format_gem_stake_details(transaction_data: pd, token='') -> pd:
+    # To be used later
+    transaction_data['First Date'] =\
+        transaction_data['Date']
+    transaction_data['Latest Date'] =\
+        transaction_data['Date']
+    
     aggregate_column = 'Amount ' + token
     aggregate_col_data = transaction_data[[aggregate_column]]
     transaction_data[aggregate_column] = \
@@ -99,12 +114,13 @@ def format_gem_stake_details(transaction_data: pd, token='') -> pd:
     return transaction_data
 
 def format_cb_trans_details(transaction_data: pd) -> pd:
-    
     # Convert column to Datetime first
     transaction_data['Timestamp'] =\
         pd.to_datetime(transaction_data['Timestamp'], errors='coerce')
-    # Convert Datetime to Date
-    transaction_data['Date'] =\
+    # Convert Datetime to Date - to be used later
+    transaction_data['First Date'] =\
+        transaction_data['Timestamp'].dt.date
+    transaction_data['Latest Date'] =\
         transaction_data['Timestamp'].dt.date
     
     # TODO: This value is incorrect
@@ -122,8 +138,8 @@ def format_cb_trans_details(transaction_data: pd) -> pd:
 def aggregate_transaction_details(transaction_data: pd, col_names={}) -> pd:
     aggregate_details = pd.DataFrame(
         columns=[
-            #'First Date',
-            'Date', # Latest Date
+            'First Date',
+            'Latest Date',
             'Quantity',
             'Subtotal',
             'Fees',
@@ -132,10 +148,13 @@ def aggregate_transaction_details(transaction_data: pd, col_names={}) -> pd:
         ]
     )
        
-    #first_date = transaction_data['Date'].min()
-    transaction_data['Date'] = \
-        pd.to_datetime(transaction_data['Date'], errors='coerce')
-    latest_date = transaction_data['Date'].max()
+    transaction_data['First Date'] = \
+        pd.to_datetime(transaction_data['First Date'], errors='coerce')
+    first_date = transaction_data['First Date'].min()
+    
+    transaction_data['Latest Date'] = \
+        pd.to_datetime(transaction_data['Latest Date'], errors='coerce')
+    latest_date = transaction_data['Latest Date'].max()
     
     # Aggregates
     quantity_col = col_names.get('quantity', False)
@@ -160,7 +179,7 @@ def aggregate_transaction_details(transaction_data: pd, col_names={}) -> pd:
     est_spot_price = subtotal / quantity
     
     aggregate_details.loc[0] = [
-        #first_date,
+        first_date,
         latest_date,
         quantity, 
         subtotal, 
@@ -246,9 +265,3 @@ if __name__ == '__main__':
         print(token+' AGGREGATE:')
         print(final_aggregate)
         print('----------------------------------------------------------------------')
-        
-
-    
-    # TODO: Aggregate ALL data
-    
-    #print(cb_btc_aggregate_trans_data)
