@@ -164,6 +164,31 @@ def format_cb_transaction_details(transaction_data: pd, token = '') -> None:
     
     return transaction_data
 
+def aggregate_gem_transaction_details(transaction_data: pd, token='') -> None:
+    aggregate_details = pd.DataFrame(
+        columns=['Quantity', 'Subtotal', 'Fees', 'Total', 'Spot Price']
+    )
+       
+    # Aggregates                        
+    quantity = transaction_data[token+' Amount '+token].sum()
+    subtotal = transaction_data['USD Amount USD'].sum()
+    fees = transaction_data['Fee (USD) USD'].sum()
+    total = subtotal + fees
+    
+    # Aggregate Spot price (Estimate, not actually used in calc)
+    # aggregate subtotal / aggregate quantity = mean spot price
+    est_spot_price = subtotal / quantity
+    
+    aggregate_details.loc[0] = [
+        quantity, 
+        subtotal, 
+        fees, 
+        total, 
+        est_spot_price 
+    ]
+    
+    return aggregate_details
+
 def aggregate_stake_details(transaction_data: pd, token='') -> None:
     aggregate_column = 'Amount ' + token
     aggregate_col_data = transaction_data[[aggregate_column]]
@@ -227,7 +252,10 @@ if __name__ == '__main__':
     # Retrieve and Aggregate Gemini Transaction History
     gem_btc_trans_data = retrieve_gemini_transaction_details(token='BTC')
     gem_btc_trans_data = format_cb_transaction_details(transaction_data=gem_btc_trans_data, token='BTC')
-    # TODO: Aggregate Transaction Data
+    gem_btc_aggregate_trans_data = aggregate_gem_transaction_details(
+        transaction_data=gem_btc_trans_data, 
+        token='BTC'
+    )
     
     # Retrieve and Aggregate Gemini Stake History
     # gem_btc_stake_data = retrieve_gemini_stake_details(token='BTC')
@@ -241,4 +269,4 @@ if __name__ == '__main__':
     
     # TODO: Aggregate ALL data
     
-    print()
+    print(gem_btc_aggregate_trans_data)
