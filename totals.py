@@ -226,7 +226,6 @@ if __name__ == '__main__':
     
     # Retrieve and Aggregate Gemini Transaction History
     gem_btc_trans_data = retrieve_gemini_transaction_details(token='BTC')
-    # TODO: Format transaction data
     gem_btc_trans_data = format_cb_transaction_details(transaction_data=gem_btc_trans_data, token='BTC')
     # TODO: Aggregate Transaction Data
     
