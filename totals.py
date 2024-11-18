@@ -4,6 +4,9 @@ import time
 from datetime import datetime
 import pandas as pd
 
+# Set the display format to avoid scientific notation 
+pd.options.display.float_format = '{:.8f}'.format
+    
 pd.set_option('display.max_rows', 1000)
 
 from coinbase_advanced_trader.enhanced_rest_client import EnhancedRESTClient
@@ -145,10 +148,23 @@ def retrieve_transactions_from_file(token='', token_column_name='', filename='',
 def filter_data_by_selected_columns(transaction_data: pd, selected_columns: list[str] = []) -> pd:
     return transaction_data[selected_columns]
 
-def aggregate_stake_details(transaction_data: pd, token='') -> None:
-    # Set the display format to avoid scientific notation 
-    pd.options.display.float_format = '{:.8f}'.format
+def format_cb_transaction_details(transaction_data: pd, token = '') -> None:
+    transaction_data['USD Amount USD'] = \
+        transaction_data['USD Amount USD'].str.slice(1, -1)
+    transaction_data['USD Amount USD'] = \
+        transaction_data['USD Amount USD'].str.replace('$', '').astype(float)
+        
+    transaction_data['Fee (USD) USD'] = \
+        transaction_data['Fee (USD) USD'].str.slice(1, -1)
+    transaction_data['Fee (USD) USD'] = \
+        transaction_data['Fee (USD) USD'].str.replace('$', '').astype(float)
+        
+    transaction_data[token+' Amount '+token] = \
+        transaction_data[token+' Amount '+token].str.replace(' '+token, '').astype(float)
     
+    return transaction_data
+
+def aggregate_stake_details(transaction_data: pd, token='') -> None:
     aggregate_column = 'Amount ' + token
     aggregate_col_data = transaction_data[[aggregate_column]]
     aggregate_col_data = aggregate_col_data[aggregate_column].str.replace(token, '').astype(float)
@@ -208,8 +224,11 @@ if __name__ == '__main__':
     #gem_btc_trades = retrieve_trade_history('BTC', BTC_ASOF_MS)
     #gem_eth_trades = retrieve_trade_history('ETH', ETH_ASOF_MS)
     
-    # TODO: Retrieve and Aggregate Gemini Transaction History
+    # Retrieve and Aggregate Gemini Transaction History
     gem_btc_trans_data = retrieve_gemini_transaction_details(token='BTC')
+    # TODO: Format transaction data
+    gem_btc_trans_data = format_cb_transaction_details(transaction_data=gem_btc_trans_data, token='BTC')
+    # TODO: Aggregate Transaction Data
     
     # Retrieve and Aggregate Gemini Stake History
     # gem_btc_stake_data = retrieve_gemini_stake_details(token='BTC')
@@ -220,5 +239,7 @@ if __name__ == '__main__':
     # Retrieve Coinbase Transaction History
     #cb_btc_data = retrieve_coinbase_transaction_details('BTC')
     #aggregate_transaction_details(btc_data)
+    
+    # TODO: Aggregate ALL data
     
     print()
